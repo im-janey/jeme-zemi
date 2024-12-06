@@ -1,8 +1,8 @@
 import 'dart:math';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-// import 'package:cloud_firestore/cloud_firestore.dart';
-// import 'package:firebase_auth/firebase_auth.dart';
 
 class SignUpPage extends StatefulWidget {
   const SignUpPage({super.key});
@@ -19,9 +19,9 @@ class _SignUpPageState extends State<SignUpPage> {
   final TextEditingController _confirmPasswordController =
       TextEditingController();
 
-  // Firebase 관련 객체 (현재 주석 처리됨)
-  // final FirebaseAuth _auth = FirebaseAuth.instance;
-  // final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  // Firebase 관련 객체
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   // 회원가입 메서드
   Future<void> _signUp() async {
@@ -37,15 +37,22 @@ class _SignUpPageState extends State<SignUpPage> {
       return;
     }
 
-    try {
-      // Firebase 회원가입 로직 (주석 처리됨)
-      // UserCredential userCredential =
-      //     await _auth.createUserWithEmailAndPassword(
-      //   email: email,
-      //   password: password,
-      // );
+    if (password != _confirmPasswordController.text.trim()) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('비밀번호가 일치하지 않습니다.')),
+      );
+      return;
+    }
 
-      // 랜덤 이미지 선택 (테스트용)
+    try {
+      // Firebase 회원가입 로직
+      UserCredential userCredential =
+          await _auth.createUserWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+
+      // 랜덤 이미지 선택
       List<String> imageLinks = [
         'https://example.com/image1.jpg',
         'https://example.com/image2.jpg',
@@ -53,13 +60,13 @@ class _SignUpPageState extends State<SignUpPage> {
       ];
       String randomImage = imageLinks[Random().nextInt(imageLinks.length)];
 
-      // Firestore에 사용자 정보 저장 (주석 처리됨)
-      // await _firestore.collection('users').doc(userCredential.user?.uid).set({
-      //   'nickname': nickname,
-      //   'email': email,
-      //   'image': randomImage,
-      //   'createdAt': FieldValue.serverTimestamp(),
-      // });
+      // Firestore에 사용자 정보 저장
+      await _firestore.collection('users').doc(userCredential.user?.uid).set({
+        'nickname': nickname,
+        'email': email,
+        'image': randomImage,
+        'createdAt': FieldValue.serverTimestamp(),
+      });
 
       print("회원가입 성공: $email");
       ScaffoldMessenger.of(context).showSnackBar(
@@ -88,7 +95,7 @@ class _SignUpPageState extends State<SignUpPage> {
         child: SingleChildScrollView(
           child: Column(
             children: [
-              const SizedBox(height: 129),
+              const SizedBox(height: 115),
               // 닉네임 입력 필드
               _buildTextField(
                 '닉네임을 입력해주세요',
